@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Executable with PyInstaller
         run: |
-          python -m pyinstaller --noconfirm --onefile --windowed --name "RokuBridge" --icon "icon.ico" --add-data "templates;templates" --add-data "static;static" app.py
+          pyinstaller --noconfirm --onefile --windowed --name "RokuBridge" --icon "icon.ico" --add-data "templates;templates" --add-data "static;static" app.py
 
       - name: Compile Inno Setup Installer
         run: |
