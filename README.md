@@ -1,4 +1,6 @@
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)
+![Build Status](https://img.shields.io/github/actions/workflow/status/nuken/roku-bridge-windows/build-unsigned.yml?branch=main)
 
 # Roku Bridge (Windows Edition)
 
@@ -53,6 +55,7 @@ This repository contains a GitHub Actions workflow (`.github/workflows/build-uns
 
 ## 📝 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
 
 
