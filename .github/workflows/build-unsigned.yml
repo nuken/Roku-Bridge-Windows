@@ -1,0 +1,36 @@
+name: Build Unsigned Windows Installer
+
+on:
+  workflow_dispatch: # Allows you to trigger this manually with a button click
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build Executable with PyInstaller
+        run: |
+          python -m pyinstaller --noconfirm --onefile --windowed --name "RokuBridge" --icon "icon.ico" --add-data "templates;templates" --add-data "static;static" app.py
+
+      - name: Compile Inno Setup Installer
+        run: |
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup.iss
+
+      - name: Upload Installer as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RokuBridge-Unsigned-Installer
+          path: Output/RokuBridge_Setup_v5.0.0.exe
