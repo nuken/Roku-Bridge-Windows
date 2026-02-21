@@ -1,102 +1,52 @@
-# **Roku Channels Bridge (LEAN Edition)**
+# Roku Bridge (Windows Edition)
 
-**Release: 5.0.0-LEAN**
+A lightweight, native Windows background service that acts as a proxy bridge between raw LinkPi Transport Streams and Channels DVR. It dynamically assigns local network ports and issues Roku External Control Protocol (ECP) commands to automate live TV tuning for HDMI encoders.
 
-**[Official Configuration Guide](https://tuner.ct.ws)**
+This version has been completely rewritten to run natively on Windows without requiring Docker or Linux environments. 
 
-This "Lean and Mean" edition of the Roku Channels Bridge is a high-performance, ultra-lightweight proxy designed specifically for use with **LinkPi encoders**. By stripping out legacy transcoding features (`ffmpeg`) and complex macro systems, this version focuses entirely on lightning-fast tuning using Roku's native ECP Search/Browse deep-linking.
+## ✨ Features
+* **Zero Dependencies:** Runs entirely natively on Windows. No Python installation, Docker, or WSL required for the end user.
+* **Auto-Configuration:** Automatically discovers the host machine's local IP address and scans for an open port (starting at 5006) to prevent conflicts with other services.
+* **Waitress Multi-Threaded Engine:** Handles raw `.ts` video streaming efficiently in the background without locking up the UI.
+* **Automated Firewall Management:** The installer automatically configures Windows Defender Firewall to allow local network streaming.
+* **Auto-Start:** Installs directly to the Windows Startup folder so your streams are always ready when your PC boots.
+* **Built-in Web Player:** Preview your LinkPi streams directly in the browser using `mpegts.js`.
 
-It is highly optimized for stable, deep-link-friendly streaming apps like **YouTube TV** and **DirecTV**.
+## 🚀 Installation (For Users)
 
-## **Key Features**
+1. Navigate to the **[Releases](../../releases)** tab on the right side of this repository.
+2. Download the latest `RokuBridge_Setup_vX.X.X.exe`.
+3. Double-click the installer. 
+4. The setup wizard will automatically install the application, add the necessary firewall exceptions, and create a shortcut.
+5. Once installed, the application will silently launch in the background and automatically open the configuration interface in your default web browser.
 
-* **Instant Deep-Linking:** Utilizes the Roku ECP `search/browse` endpoint to bypass app home screens and launch directly into live playback.
-* **Zero-Overhead Proxy:** Built strictly for hardware encoders like LinkPi that do not require re-encoding. It acts as a pure, high-speed pass-through for the video stream.
-* **Integrated Gracenote Auto-Mapping:** You no longer need a separate EPG/XMLTV file. Simply enter the Gracenote Station ID in the web interface, and Channels DVR will automatically map the guide data and channel logos.
-* **Ultra-Lightweight Image:** Removed all `ffmpeg` and hardware-acceleration dependencies, resulting in a significantly smaller Docker footprint and near-zero CPU usage.
-* **Adjustable Tune Delays:** Configure exact buffer delays per channel to ensure the app is ready before the stream is captured.
+## ⚙️ Configuration & Usage
 
-## **Installation**
+When the application launches for the first time, it will generate a `roku_channels.json` file in your user `AppData\Local\RokuBridge` folder to safely store your settings.
 
-The application is distributed as a multi-architecture Docker image.
+1. Use the web interface to add your **LinkPi Encoder URL** and your **Roku IP Address**.
+2. Add your desired channels (including the Deep Link Content ID and Roku App ID).
+3. Copy the generated M3U playlist link from the status page.
+4. Paste the M3U link into your **Channels DVR** custom source settings. 
 
-### **Step 1: Pull the Docker Image**
+Channels DVR will now seamlessly tune your Roku and capture the LinkPi stream whenever you select a channel.
 
-Open a terminal and pull the `lean` tagged image from Docker Hub:
+## 🛠️ Building from Source (For Developers)
 
-```bash
-docker pull rcvaughn2/roku-ecp-tuner:lean
+This project uses `PyInstaller` and `Inno Setup` to compile the Python scripts into a standalone Windows installer.
 
-```
+### Prerequisites:
+* Python 3.10+
+* [Inno Setup 6](https://jrsoftware.org/isinfo.php)
 
-### **Step 2: Run the Docker Container**
+### Local Build Instructions:
+1. Clone the repository to your Windows machine.
+2. Double-click the `build.bat` script. This will automatically create a Python virtual environment, install the requirements, and use PyInstaller to compile `app.py` into a standalone `RokuBridge.exe` inside the `\dist` folder.
+3. Once compiled, right-click the `setup.iss` file and select **Compile** using Inno Setup. 
+4. The final, distributable Windows Setup Wizard will be generated in the `\Output` folder.
 
-Run the container using the command below. This creates a persistent Docker volume named `roku-bridge-config` where your configuration will be safely stored.
+### CI/CD Pipeline
+This repository contains a GitHub Actions workflow (`.github/workflows/build-unsigned.yml`) that automatically compiles the Waitress server and generates the Inno Setup executable in the cloud. 
 
-```bash
-docker run -d \
-  --name roku-channels-bridge-lean \
-  -p 5006:5000 \
-  -v roku-bridge-config:/app/config \
-  --restart unless-stopped \
-  rcvaughn2/roku-ecp-tuner:lean
-
-```
-
-### **Step 3: Configure Your Tuners & Channels**
-
-1. Open your web browser and navigate to the Status & Configuration Page:
-`http://<IP_OF_DOCKER_HOST>:5006/status`
-2. Use the web interface to:
-* **Add Your LinkPi Tuners:** Click "Add Tuner" and provide the Roku IP and LinkPi TS stream URL.
-* **Add Deep-Link Channels:** Click "Add Channel" and enter the friendly name, Roku App ID (e.g., `195316` for YouTube TV), Deep Link Content ID, and the Gracenote Station ID.
-* **Set Tune Delays:** Adjust the delay (in seconds) to give the app enough time to load the video before the bridge starts proxying the stream.
-
-
-3. Click **Save & Reload Server** to apply your changes instantly.
-
-## **Channels DVR Setup**
-
-This lean bridge generates a single, unified M3U playlist file that handles both the stream routing and the guide data mapping.
-
-* **M3U URL:** `http://<IP_OF_DOCKER_HOST>:5006/channels.m3u`
-
-**To add to Channels DVR:**
-
-1. Open your Channels DVR server settings.
-2. Go to "Sources" and click "+ Add Source" -> "Custom Channels".
-3. Enter the M3U URL.
-4. Because the M3U includes the `tvc-guide-stationid` tags you configured in the web UI, Channels DVR will automatically download the correct guide data.
-
-### **Playlist Filtering (Optional)**
-
-If you want to organize your channels into separate sources in Channels DVR, you can generate filtered M3U URLs by adding `?playlist=<playlist_name>` to the URL.
-
-* *Example:* `http://<IP_OF_DOCKER_HOST>:5006/channels.m3u?playlist=YTTV`
-
-## **Configuration File (`roku_channels.json`)**
-
-While it is highly recommended to manage your setup through the web interface, the raw configuration is stored in `roku_channels.json`. Here is an example of the streamlined structure:
-
-```json
-{
-  "tuners": [
-    {
-      "name": "LinkPi-1",
-      "roku_ip": "192.168.86.35",
-      "encoder_url": "http://192.168.86.90/ts/1_0"
-    }
-  ],
-  "channels": [
-    {
-      "id": "yttv_fox",
-      "name": "FOX",
-      "roku_app_id": "195316",
-      "deep_link_content_id": "Gs-ILaF-HNw",
-      "gracenote_id": "11594",
-      "tune_delay": 3
-    }
-  ]
-}
-
-```
+## 📝 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
