@@ -4,7 +4,7 @@ A lightweight, native Windows background service that acts as a proxy bridge bet
 
 This version has been completely rewritten to run natively on Windows without requiring Docker or Linux environments. 
 
-## ✨ Features
+##  Features
 * **Zero Dependencies:** Runs entirely natively on Windows. No Python installation, Docker, or WSL required for the end user.
 * **Auto-Configuration:** Automatically discovers the host machine's local IP address and scans for an open port (starting at 5006) to prevent conflicts with other services.
 * **Waitress Multi-Threaded Engine:** Handles raw `.ts` video streaming efficiently in the background without locking up the UI.
@@ -12,7 +12,7 @@ This version has been completely rewritten to run natively on Windows without re
 * **Auto-Start:** Installs directly to the Windows Startup folder so your streams are always ready when your PC boots.
 * **Built-in Web Player:** Preview your LinkPi streams directly in the browser using `mpegts.js`.
 
-## 🚀 Installation (For Users)
+##  Installation (For Users)
 
 1. Navigate to the **[Releases](../../releases)** tab on the right side of this repository.
 2. Download the latest `RokuBridge_Setup_vX.X.X.exe`.
@@ -20,7 +20,7 @@ This version has been completely rewritten to run natively on Windows without re
 4. The setup wizard will automatically install the application, add the necessary firewall exceptions, and create a shortcut.
 5. Once installed, the application will silently launch in the background and automatically open the configuration interface in your default web browser.
 
-## ⚙️ Configuration & Usage
+##  Configuration & Usage
 
 When the application launches for the first time, it will generate a `roku_channels.json` file in your user `AppData\Local\RokuBridge` folder to safely store your settings.
 
@@ -31,7 +31,7 @@ When the application launches for the first time, it will generate a `roku_chann
 
 Channels DVR will now seamlessly tune your Roku and capture the LinkPi stream whenever you select a channel.
 
-## 🛠️ Building from Source (For Developers)
+##  Building from Source (For Developers)
 
 This project uses `PyInstaller` and `Inno Setup` to compile the Python scripts into a standalone Windows installer.
 
@@ -50,3 +50,4 @@ This repository contains a GitHub Actions workflow (`.github/workflows/build-uns
 
 ## 📝 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
