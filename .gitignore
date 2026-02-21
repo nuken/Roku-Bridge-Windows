@@ -1,0 +1,18 @@
+# Python virtual environments
+venv/
+env/
+__pycache__/
+
+# PyInstaller build folders and files
+build/
+dist/
+*.spec
+
+# Inno Setup output folder
+Output/
+
+# User-specific configuration (Keep your IPs private!)
+roku_channels.json
+
+# Windows thumbnails/cache
+Thumbs.db
