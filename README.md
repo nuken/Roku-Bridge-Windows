@@ -1,4 +1,5 @@
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
+[![Docs](https://img.shields.io/badge/docs-User_Guide-brightgreen.svg)](GUIDE.md)
 ![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/nuken/roku-bridge-windows/build-unsigned.yml?branch=main)
 
@@ -55,6 +56,7 @@ This repository contains a GitHub Actions workflow (`.github/workflows/build-uns
 
 ## 📝 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
 
 
