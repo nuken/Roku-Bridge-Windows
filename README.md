@@ -1,3 +1,5 @@
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+
 # Roku Bridge (Windows Edition)
 
 A lightweight, native Windows background service that acts as a proxy bridge between raw LinkPi Transport Streams and Channels DVR. It dynamically assigns local network ports and issues Roku External Control Protocol (ECP) commands to automate live TV tuning for HDMI encoders.
@@ -51,5 +53,6 @@ This repository contains a GitHub Actions workflow (`.github/workflows/build-uns
 
 ## 📝 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
 
