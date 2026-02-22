@@ -22,7 +22,7 @@ This lightweight Windows version is completely standalone and requires no Docker
 All of your settings are safely generated and stored in your local Windows `AppData` folder.
 
 * **Add a Tuner:** In the web interface, enter your LinkPi Encoder URL and the Roku IP Address you found in Step 1.
-* **Add Channels:** Enter the target application's App ID (e.g., use `140474` for DirecTV) and the specific deep-link Content ID for the channel you want to tune.
+* **Add Channels:** Select provider app fron dropdown (e.g., YTTV or DirecTV) and the specific deep-link Content ID for the channel you want to tune. [Gracenote Finder App](https://nukenlms.com/nuken/ChannelsDvrFinder.zip)
 * **Generate the Playlist:** Once your tuners and channels are saved, the bridge will instantly generate an M3U playlist link on the status page.
 
 ## 4. Connecting to Channels DVR
