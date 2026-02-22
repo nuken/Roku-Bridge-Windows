@@ -37,7 +37,7 @@ CONFIG_FILE = os.path.join(app_data_dir, 'roku_channels.json')
 TUNERS = []
 CHANNELS = []
 APP_PORT = 5006
-APP_VERSION = "5.0.1-LEAN-WIN"
+APP_VERSION = "5.0.2-LEAN-WIN"
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 roku_session = requests.Session()
@@ -274,4 +274,5 @@ if __name__ == '__main__':
     # 3. Start the Windows-native WSGI server
     # threads=32 ensures video previews won't lock up the UI
     logging.info(f"Starting Waitress Server v{APP_VERSION} on port {APP_PORT}...")
+
     serve(app, host='0.0.0.0', port=APP_PORT, threads=32)
