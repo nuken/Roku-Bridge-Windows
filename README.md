@@ -11,6 +11,7 @@ This version has been completely rewritten to run natively on Windows without re
 
 ##  Features
 
+* **YouTube TV & DirecTV Apps Only** These are the only Roku Apps that work well with ECP commands.
 * **Zero Dependencies:** Runs entirely natively on Windows. No Python installation, Docker, or WSL required for the end user.
 * **Auto-Configuration:** Automatically discovers the host machine's local IP address and scans for an open port (starting at 5006) to prevent conflicts with other services.
 * **Waitress Multi-Threaded Engine:** Handles raw `.ts` video streaming efficiently in the background without locking up the UI.
@@ -56,6 +57,7 @@ This repository contains a GitHub Actions workflow (`.github/workflows/build-uns
 
 ## 📝 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
 
 
