@@ -33,4 +33,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: RokuBridge-Unsigned-Installer
-          path: Output/RokuBridge_Setup_v5.0.0.exe
+          path: Output/*.exe
