@@ -37,7 +37,7 @@ CONFIG_FILE = os.path.join(app_data_dir, 'roku_channels.json')
 TUNERS = []
 CHANNELS = []
 APP_PORT = 5006
-APP_VERSION = "5.0.0-LEAN-WIN"
+APP_VERSION = "5.0.1-LEAN-WIN"
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 roku_session = requests.Session()

@@ -1,7 +1,7 @@
 [Setup]
 ; Basic App Info
 AppName=Roku Bridge
-AppVersion=5.0.0
+AppVersion=5.0.1
 AppPublisher=nuken
 DefaultDirName={autopf}\RokuBridge
 DisableProgramGroupPage=yes
@@ -9,7 +9,7 @@ DisableProgramGroupPage=yes
 SetupIconFile=icon.ico
 ; Where the final setup.exe will be saved
 OutputDir=Output
-OutputBaseFilename=RokuBridge_Setup_v5.0.0
+OutputBaseFilename=RokuBridge_Setup_v5.0.1
 Compression=lzma
 SolidCompression=yes
 ; Require admin rights to add firewall rules

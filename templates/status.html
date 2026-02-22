@@ -34,7 +34,7 @@
         <div class="top-actions">
             <button class="button" onclick="loadConfig()"><i class="fa-solid fa-sync"></i> Refresh Data</button>
             <a href="/remote" class="button">Remote</a>
-            <a href="/channels.m3u" target="_blank" class="button"><i class="fa-solid fa-list"></i> View M3U</a>
+            <button id="copy-m3u-btn" class="button" onclick="copyM3uLink()"><i class="fa-solid fa-copy"></i> Copy M3U Link</button>
         </div>
 
         <h2><i class="fa-solid fa-satellite-dish"></i> LinkPi Tuners</h2>
@@ -206,6 +206,51 @@
         function deleteItem(key, idx) { if(confirm("Are you sure?")) { config[key].splice(idx, 1); render(); } }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         window.onload = loadConfig;
+		
+		// Copy M3U Link to Clipboard (With HTTP Network Fallback)
+        async function copyM3uLink() {
+            const m3uUrl = window.location.origin + '/channels.m3u';
+            
+            try {
+                // Try modern API first (works on localhost)
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(m3uUrl);
+                } else {
+                    // Fallback for HTTP network IPs
+                    const textArea = document.createElement("textarea");
+                    textArea.value = m3uUrl;
+                    // Hide the text area off-screen
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    textArea.style.top = "-999999px";
+                    document.body.appendChild(textArea);
+                    
+                    textArea.focus();
+                    textArea.select();
+                    
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    if (!successful) throw new Error('Fallback copy command failed');
+                }
+                
+                // Visual feedback: Temporarily change the button text
+                const btn = document.getElementById('copy-m3u-btn');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                btn.style.backgroundColor = 'var(--success-color)';
+                
+                // Revert back after 2 seconds
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.style.backgroundColor = 'var(--button-color)';
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                alert("Failed to copy link. Your browser is strictly blocking clipboard access.");
+            }
+        }
     </script>
 </body>
 </html>
