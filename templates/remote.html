@@ -215,8 +215,16 @@
                 return;
             }
             try {
-                const encodedKey = encodeURIComponent(key);
-                const response = await fetch(`${window.location.origin}/remote/keypress/${selectedDeviceIp}/${encodedKey}`, { method: 'POST' });
+                const response = await fetch(`${window.location.origin}/api/remote/keypress`, { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        key: key,
+                        tuner_ip: selectedDeviceIp
+                    })
+                });
                 const result = await response.json();
                 if (result.status !== 'success') {
                     showNotification(`Error: ${result.message}`);
@@ -264,15 +272,19 @@
 
         async function confirmReboot() {
             try {
-                const response = await fetch(`${window.location.origin}/remote/reboot/${selectedDeviceIp}`, { method: 'POST' });
-                const result = await response.json();
-                if (result.status === 'success') {
-                    showNotification('Reboot command sent!');
-                } else {
-                    showNotification(`Error: ${result.message}`);
+                showNotification('Sending reboot sequence...');
+                // The secret Roku reboot macro sequence
+                const sequence = ['Home', 'Home', 'Home', 'Home', 'Home', 'Up', 'Rev', 'Rev', 'Fwd', 'Fwd'];
+                
+                for (const key of sequence) {
+                    await sendKey(key);
+                    // Add a tiny 300ms delay between button presses so the Roku can register them
+                    await new Promise(resolve => setTimeout(resolve, 300));
                 }
+                
+                showNotification('Reboot macro sent! Roku should restart momentarily.');
             } catch (error) {
-                console.error('Failed to send reboot command:', error);
+                console.error('Failed to send reboot sequence:', error);
                 showNotification('Failed to send reboot command.');
             } finally {
                 closeRebootModal();
