@@ -19,7 +19,7 @@ This version has been completely rewritten to run natively on Windows without re
 * **Auto-Start:** Installs directly to the Windows Startup folder so your streams are always ready when your PC boots.
 * **Built-in Web Player:** Preview your LinkPi streams directly in the browser using `mpegts.js`.
 
-##  Installation (For Users)
+##  Installation (For Users) 
 
 1. Navigate to the **[Releases](../../releases)** tab on the right side of this repository.
 2. Download the latest `RokuBridge_Setup_vX.X.X.exe`.
@@ -28,6 +28,8 @@ This version has been completely rewritten to run natively on Windows without re
 5. Once installed, the application will silently launch in the background and automatically open the configuration interface in your default web browser.
 
 ##  Configuration & Usage
+**:link:[User Guide](GUIDE.md)**
+
 
 When the application launches for the first time, it will generate a `roku_channels.json` file in your user `AppData\Local\RokuBridge` folder to safely store your settings.
 
@@ -57,6 +59,7 @@ This repository contains a GitHub Actions workflow (`.github/workflows/build-uns
 
 ## 📝 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
 
 
