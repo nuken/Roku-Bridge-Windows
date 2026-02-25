@@ -39,7 +39,7 @@ CONFIG_FILE = os.path.join(app_data_dir, 'roku_channels.json')
 TUNERS = []
 CHANNELS = []
 APP_PORT = 5006
-APP_VERSION = "5.0.2-LEAN-WIN"
+APP_VERSION = "5.0.3-LEAN-WIN"
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 roku_session = requests.Session()
@@ -316,4 +316,5 @@ if __name__ == '__main__':
     tray_icon = pystray.Icon("RokuBridge", tray_image, "Roku Bridge", menu)
     
     # .run() blocks the main thread, keeping the application alive until exited
+
     tray_icon.run()
