@@ -1,7 +1,7 @@
 [Setup]
 ; Basic App Info
 AppName=Roku Bridge
-AppVersion=5.0.2
+AppVersion=5.0.3
 AppPublisher=nuken
 DefaultDirName={autopf}\RokuBridge
 DisableProgramGroupPage=yes
@@ -9,7 +9,7 @@ DisableProgramGroupPage=yes
 SetupIconFile=icon.ico
 ; Where the final setup.exe will be saved
 OutputDir=Output
-OutputBaseFilename=RokuBridge_Setup_v5.0.2
+OutputBaseFilename=RokuBridge_Setup_v5.0.3
 Compression=lzma
 SolidCompression=yes
 ; Require admin rights to add firewall rules
@@ -37,3 +37,4 @@ Filename: "{app}\RokuBridge.exe"; Description: "Launch Roku Bridge Now"; Flags: 
 ; Clean up the firewall rule if the user uninstalls the app
 
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""Roku Bridge"" program=""{app}\RokuBridge.exe"""; Flags: runhidden; RunOnceId: "RemoveFirewallRule"
+
