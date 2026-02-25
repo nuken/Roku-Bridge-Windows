@@ -9,6 +9,8 @@ import webbrowser
 import requests
 from flask import Flask, request, Response, render_template, jsonify
 from waitress import serve
+import pystray
+from PIL import Image
 
 # ==========================================
 # 1. PyInstaller MEIPASS & Path Configuration
@@ -255,7 +257,7 @@ def api_status_data():
     return jsonify({"tuners": TUNERS, "channels": CHANNELS})
 
 # ==========================================
-# 8. Waitress Server & Auto-Launch
+# 8. Waitress Server, Auto-Launch & System Tray
 # ==========================================
 if __name__ == '__main__':
     # 1. Load config and claim our port
@@ -271,8 +273,47 @@ if __name__ == '__main__':
         
     threading.Thread(target=open_browser, daemon=True).start()
     
-    # 3. Start the Windows-native WSGI server
-    # threads=32 ensures video previews won't lock up the UI
+    # 3. Start the Windows-native WSGI server in a background thread
+    # We move this to a thread so it doesn't block the system tray icon
     logging.info(f"Starting Waitress Server v{APP_VERSION} on port {APP_PORT}...")
+    server_thread = threading.Thread(
+        target=serve, 
+        args=(app,), 
+        kwargs={'host': '0.0.0.0', 'port': APP_PORT, 'threads': 32}, 
+        daemon=True
+    )
+    server_thread.start()
 
-    serve(app, host='0.0.0.0', port=APP_PORT, threads=32)
+    # 4. Set up the System Tray Icon
+    def on_open_dashboard(icon, item):
+        target_url = f"http://{get_lan_ip()}:{APP_PORT}/status"
+        webbrowser.open(target_url)
+
+    def on_exit(icon, item):
+        icon.stop()
+        os._exit(0) # Hard exit to immediately kill the Waitress background thread
+
+    # Locate the icon.ico file (works both in dev and when compiled by PyInstaller)
+    if getattr(sys, 'frozen', False):
+        icon_path = os.path.join(sys._MEIPASS, 'icon.ico')
+    else:
+        icon_path = os.path.join(base_dir, 'icon.ico')
+    
+    try:
+        tray_image = Image.open(icon_path)
+    except Exception as e:
+        logging.warning(f"Could not load icon.ico for tray: {e}")
+        # Fallback to a blank blue square if the icon is missing
+        tray_image = Image.new('RGB', (64, 64), color=(73, 109, 137))
+
+    # Create the right-click menu
+    menu = pystray.Menu(
+        pystray.MenuItem('Open Dashboard', on_open_dashboard),
+        pystray.MenuItem('Close Server', on_exit)
+    )
+
+    # Initialize and run the system tray icon
+    tray_icon = pystray.Icon("RokuBridge", tray_image, "Roku Bridge", menu)
+    
+    # .run() blocks the main thread, keeping the application alive until exited
+    tray_icon.run()
