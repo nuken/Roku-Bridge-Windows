@@ -1,5 +1,14 @@
-
 # Roku Bridge (Windows Edition) - User Guide
+
+## Table of Contents
+* [1. Preparing Your Roku Device](#1-preparing-your-roku-device)
+* [2. Installing the Application](#2-installing-the-application)
+* [3. Configuring Tuners and Channels](#3-configuring-tuners-and-channels)
+* [4. Connecting to Channels DVR](#4-connecting-to-channels-dvr)
+* [5. Partial YTTV Channels with Gracenotes IDs and Deeplinks](#5-partial-yttv-channels-with-gracenotes-ids-and-deeplinks)
+* [6. Partial DirecTv Channels with Gracenotes IDs and Deeplinks](#6-partial-directv-channels-with-gracenotes-ids-and-deeplinks)
+
+---
 
 ## 1. Preparing Your Roku Device
 
