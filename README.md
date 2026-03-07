@@ -30,7 +30,7 @@ This version has been completely rewritten to run natively on Windows without re
 ##  Configuration & Usage
 **:link:[User Guide](GUIDE.md)**
 
-
+Read the User Guide for full setup instructions.
 When the application launches for the first time, it will generate a `roku_channels.json` file in your user `AppData\Local\RokuBridge` folder to safely store your settings.
 
 1. Use the web interface to add your **LinkPi Encoder URL** and your **Roku IP Address**.
@@ -59,6 +59,7 @@ This repository contains a GitHub Actions workflow (`.github/workflows/build-uns
 
 ## 📝 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
 
 
