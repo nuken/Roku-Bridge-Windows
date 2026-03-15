@@ -124,8 +124,25 @@ def proxy_stream(channel_id):
                 for chunk in r.iter_content(chunk_size=8192):
                     if chunk:
                         yield chunk
+        except GeneratorExit:
+            # Expected behavior: Channels DVR closed the connection when the recording finished
+            logging.info(f"Channels DVR disconnected from {channel_id}.")
         except Exception as e:
-            logging.error(f"Proxy stream failed: {e}")
+            logging.error(f"Proxy stream failed for {channel_id}: {e}")
+        finally:
+            # This block ALWAYS fires when the generator closes
+            roku_ip = tuner['roku_ip']
+            logging.info(f"Stream terminated. Sending Home command to Roku at {roku_ip}")
+            
+            def send_home_command():
+                try:
+                    url = f"http://{roku_ip}:8060/keypress/home"
+                    roku_session.post(url, timeout=2)
+                except Exception as e:
+                    logging.error(f"Failed to send Home command to {roku_ip}: {e}")
+
+            # Fire the Home command in a background thread so it doesn't block the server's socket cleanup
+            threading.Thread(target=send_home_command).start()
 
     return Response(generate(), mimetype='video/mp2t')
 
