@@ -39,7 +39,9 @@ CONFIG_FILE = os.path.join(app_data_dir, 'roku_channels.json')
 TUNERS = []
 CHANNELS = []
 APP_PORT = 5006
-APP_VERSION = "5.0.3-LEAN-WIN"
+APP_VERSION = "5.0.4-LEAN-WIN"
+ACTIVE_STREAMS = {}
+stream_lock = threading.Lock()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 roku_session = requests.Session()
@@ -102,6 +104,25 @@ def execute_fast_tune(roku_ip, channel_data):
         except Exception as e:
             logging.error(f"Tuning failed on {roku_ip}: {e}")
 
+def execute_home_delayed(roku_ip):
+    """Waits a few seconds to survive FFmpeg probes, then sends Home if no streams are active."""
+    time.sleep(5)  
+    
+    with stream_lock:
+        active = ACTIVE_STREAMS.get(roku_ip, 0)
+        
+    if active <= 0:
+        logging.info(f"No active streams for {roku_ip}. Sending Home command.")
+        try:
+            url = f"http://{roku_ip}:8060/keypress/home"
+            roku_session.post(url, timeout=2)
+        except Exception as e:
+            logging.error(f"Failed to send Home command to {roku_ip}: {e}")
+        
+        # Reset count to 0 just in case it dipped negative
+        with stream_lock:
+            ACTIVE_STREAMS[roku_ip] = 0
+
 @app.route('/stream/<channel_id>')
 def proxy_stream(channel_id):
     """Proxies the raw TS bytes from the LinkPi to the client (Channels DVR/Browser)."""
@@ -109,13 +130,19 @@ def proxy_stream(channel_id):
     if not channel_data:
         return "Channel Not Found", 404
 
-    # Simplified round-robin tuner selection for the Lean build
     tuner = TUNERS[0] if TUNERS else None
     if not tuner:
         return "No Tuners Available", 503
 
-    # Fire the deep-link command on a background thread so the proxy can start buffering
-    threading.Thread(target=execute_fast_tune, args=(tuner['roku_ip'], channel_data)).start()
+    roku_ip = tuner['roku_ip']
+
+    # 1. Track that a new stream connection has opened
+    with stream_lock:
+        ACTIVE_STREAMS[roku_ip] = ACTIVE_STREAMS.get(roku_ip, 0) + 1
+    logging.info(f"Stream opened for {channel_id}. Active streams: {ACTIVE_STREAMS[roku_ip]}")
+
+    # Fire the deep-link command on a background thread
+    threading.Thread(target=execute_fast_tune, args=(roku_ip, channel_data)).start()
 
     def generate():
         try:
@@ -124,27 +151,26 @@ def proxy_stream(channel_id):
                 for chunk in r.iter_content(chunk_size=8192):
                     if chunk:
                         yield chunk
-        except GeneratorExit:
-            # Expected behavior: Channels DVR closed the connection when the recording finished
-            logging.info(f"Channels DVR disconnected from {channel_id}.")
         except Exception as e:
-            logging.error(f"Proxy stream failed for {channel_id}: {e}")
-        finally:
-            # This block ALWAYS fires when the generator closes
-            roku_ip = tuner['roku_ip']
-            logging.info(f"Stream terminated. Sending Home command to Roku at {roku_ip}")
+            logging.error(f"Proxy stream failed: {e}")
+
+    # Create the Flask Response object first
+    response = Response(generate(), mimetype='video/mp2t')
+
+    # 2. Bind the cleanup logic directly to the WSGI socket closure
+    @response.call_on_close
+    def on_disconnect():
+        with stream_lock:
+            ACTIVE_STREAMS[roku_ip] -= 1
+            current_active = ACTIVE_STREAMS[roku_ip]
             
-            def send_home_command():
-                try:
-                    url = f"http://{roku_ip}:8060/keypress/home"
-                    roku_session.post(url, timeout=2)
-                except Exception as e:
-                    logging.error(f"Failed to send Home command to {roku_ip}: {e}")
+        logging.info(f"Stream disconnected for {channel_id}. Active streams remaining: {current_active}")
+        
+        # 3. If the count hits 0, start the delayed home command thread
+        if current_active <= 0:
+            threading.Thread(target=execute_home_delayed, args=(roku_ip,)).start()
 
-            # Fire the Home command in a background thread so it doesn't block the server's socket cleanup
-            threading.Thread(target=send_home_command).start()
-
-    return Response(generate(), mimetype='video/mp2t')
+    return response
 
 # ==========================================
 # 6. Web UI & M3U Generator
