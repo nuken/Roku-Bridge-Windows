@@ -39,7 +39,7 @@ CONFIG_FILE = os.path.join(app_data_dir, 'roku_channels.json')
 TUNERS = []
 CHANNELS = []
 APP_PORT = 5006
-APP_VERSION = "5.0.4-LEAN-WIN"
+APP_VERSION = "5.0.5-LEAN-WIN"
 ACTIVE_STREAMS = {}
 stream_lock = threading.Lock()
 
@@ -130,22 +130,36 @@ def proxy_stream(channel_id):
     if not channel_data:
         return "Channel Not Found", 404
 
-    tuner = TUNERS[0] if TUNERS else None
-    if not tuner:
+    if not TUNERS:
         return "No Tuners Available", 503
 
-    roku_ip = tuner['roku_ip']
+    tuner = None
+    roku_ip = None
 
-    # 1. Track that a new stream connection has opened
+    # 1. Find an available tuner and lock it
     with stream_lock:
+        for t in TUNERS:
+            # Check if this specific tuner currently has 0 active streams
+            if ACTIVE_STREAMS.get(t['roku_ip'], 0) == 0:
+                tuner = t
+                roku_ip = tuner['roku_ip']
+                break
+        
+        if not tuner:
+            # If all tuners are busy, return an error so Channels DVR knows it failed
+            return "All Tuners in Use", 503
+            
+        # Track that a new stream connection has opened on this specific tuner
         ACTIVE_STREAMS[roku_ip] = ACTIVE_STREAMS.get(roku_ip, 0) + 1
-    logging.info(f"Stream opened for {channel_id}. Active streams: {ACTIVE_STREAMS[roku_ip]}")
 
-    # Fire the deep-link command on a background thread
+    logging.info(f"Stream opened for {channel_id} on tuner {roku_ip}. Active streams: {ACTIVE_STREAMS[roku_ip]}")
+
+    # Fire the deep-link command on a background thread using the selected Roku
     threading.Thread(target=execute_fast_tune, args=(roku_ip, channel_data)).start()
 
     def generate():
         try:
+            # Fetch the stream from the dynamically selected LinkPi encoder
             with requests.get(tuner['encoder_url'], stream=True, timeout=5) as r:
                 r.raise_for_status()
                 for chunk in r.iter_content(chunk_size=8192):
@@ -164,7 +178,7 @@ def proxy_stream(channel_id):
             ACTIVE_STREAMS[roku_ip] -= 1
             current_active = ACTIVE_STREAMS[roku_ip]
             
-        logging.info(f"Stream disconnected for {channel_id}. Active streams remaining: {current_active}")
+        logging.info(f"Stream disconnected for {channel_id} on {roku_ip}. Active streams remaining: {current_active}")
         
         # 3. If the count hits 0, start the delayed home command thread
         if current_active <= 0:
@@ -191,6 +205,33 @@ def api_config():
         save_config_to_disk()
         return jsonify({"status": "success"})
     return jsonify({"tuners": TUNERS, "channels": CHANNELS, "app_port": APP_PORT})
+    
+@app.route('/api/check_update', methods=['GET'])
+def check_update():
+    """Fetches the latest version from GitHub and compares it to the local version."""
+    try:
+        # URL to the raw text file on your GitHub main branch
+        github_raw_url = "https://raw.githubusercontent.com/nuken/Roku-Bridge-Windows/main/version.txt"
+        
+        # Fetch the file (timeout prevents hanging the server if GitHub is down)
+        response = requests.get(github_raw_url, timeout=3)
+        
+        if response.status_code == 200:
+            latest_version = response.text.strip()
+            
+            return jsonify({
+                "status": "success",
+                "current_version": APP_VERSION,
+                "latest_version": latest_version,
+                # Simple string comparison: if they don't match exactly, an update is available
+                "update_available": latest_version != APP_VERSION,
+                "release_url": "https://github.com/nuken/Roku-Bridge-Windows/releases"
+            })
+        else:
+            return jsonify({"status": "error", "message": "Could not fetch version file from GitHub"}), 500
+            
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500    
 
 @app.route('/channels.m3u')
 def generate_m3u():

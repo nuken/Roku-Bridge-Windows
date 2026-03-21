@@ -35,6 +35,7 @@
             <button class="button" onclick="loadConfig()"><i class="fa-solid fa-sync"></i> Refresh Data</button>
             <a href="/remote" class="button">Remote</a>
             <button id="copy-m3u-btn" class="button" onclick="copyM3uLink()"><i class="fa-solid fa-copy"></i> Copy M3U Link</button>
+            <button id="update-btn" class="button" style="background-color: #8b5cf6;" onclick="checkForUpdates()"><i class="fa-solid fa-cloud-arrow-down"></i> Check for Updates</button>
         </div>
 
         <h2><i class="fa-solid fa-satellite-dish"></i> LinkPi Tuners</h2>
@@ -206,6 +207,41 @@
         function deleteItem(key, idx) { if(confirm("Are you sure?")) { config[key].splice(idx, 1); render(); } }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         window.onload = loadConfig;
+		
+		// Check GitHub for app updates
+        async function checkForUpdates() {
+            const btn = document.getElementById('update-btn');
+            const originalHtml = btn.innerHTML;
+            
+            try {
+                // Change button to show a loading spinner
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
+                
+                const res = await fetch('/api/check_update');
+                const data = await res.json();
+                
+                // Revert button text
+                btn.innerHTML = originalHtml;
+
+                if (data.status === 'success') {
+                    if (data.update_available) {
+                        // Prompt the user to open the releases page
+                        const msg = `Update Available!\n\nCurrent Version: ${data.current_version}\nLatest Version: ${data.latest_version}\n\nWould you like to open the GitHub Releases page to download it?`;
+                        if (confirm(msg)) {
+                            window.open(data.release_url, '_blank');
+                        }
+                    } else {
+                        alert(`You are up to date! (Version ${data.current_version})`);
+                    }
+                } else {
+                    alert("Failed to check for updates: " + data.message);
+                }
+            } catch (err) {
+                console.error("Update check failed", err);
+                btn.innerHTML = originalHtml;
+                alert("Could not connect to the update server. Check your internet connection.");
+            }
+        }
 		
 		// Copy M3U Link to Clipboard (With HTTP Network Fallback)
         async function copyM3uLink() {
