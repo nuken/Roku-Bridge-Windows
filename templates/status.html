@@ -125,21 +125,32 @@
         }
 
         function render() {
-            document.getElementById('tuners-body').innerHTML = (config.tuners || []).map((t, i) => `
-                <tr><td>${t.name}</td><td>${t.roku_ip}</td><td>${t.encoder_url}</td>
-                <td><button class="action-button edit" onclick="openTunerModal(${i})">Edit</button>
-                <button class="action-button delete" onclick="deleteItem('tuners',${i})">X</button></td></tr>`).join('');
-            
-            document.getElementById('channels-body').innerHTML = (config.channels || []).map((c, i) => `
-                <tr><td>${c.name}</td><td>${getAppName(c.roku_app_id)}</td><td>${c.deep_link_content_id}</td><td>${c.gracenote_id || '-'}</td>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <a href="/preview/${c.id}" class="action-button" title="Preview Stream" style="background-color: #8b5cf6; text-decoration: none; padding: 6px 10px; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-play"></i></a>
-                        <button class="action-button edit" onclick="openChannelModal(${i})">Edit</button>
-                        <button class="action-button delete" onclick="deleteItem('channels',${i})">X</button>
-                    </div>
-                </td></tr>`).join('');
-        }
+    // Render Tuners (unchanged)
+    document.getElementById('tuners-body').innerHTML = (config.tuners || []).map((t, i) => `
+        <tr><td>${t.name}</td><td>${t.roku_ip}</td><td>${t.encoder_url}</td>
+        <td><button class="action-button edit" onclick="openTunerModal(${i})">Edit</button>
+        <button class="action-button delete" onclick="deleteItem('tuners',${i})">X</button></td></tr>`).join('');
+    
+    // Render Channels (Updated with Drag/Drop and Up/Down arrows)
+    document.getElementById('channels-body').innerHTML = (config.channels || []).map((c, i) => `
+        <tr draggable="true" ondragstart="dragStart(event, ${i})" ondragover="dragOver(event)" ondrop="drop(event, ${i})" ondragend="dragEnd(event)">
+            <td style="cursor: grab;" title="Drag to reorder">
+                <i class="fa-solid fa-grip-vertical" style="color: #666; margin-right: 10px;"></i>${c.name}
+            </td>
+            <td>${getAppName(c.roku_app_id)}</td>
+            <td>${c.deep_link_content_id}</td>
+            <td>${c.gracenote_id || '-'}</td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <button class="action-button" title="Move Up" style="background-color: #4b5563;" onclick="moveChannel(${i}, -1)" ${i === 0 ? 'disabled style="opacity: 0.5; cursor: not-allowed; background-color: #4b5563;"' : ''}><i class="fa-solid fa-arrow-up"></i></button>
+                    <button class="action-button" title="Move Down" style="background-color: #4b5563;" onclick="moveChannel(${i}, 1)" ${i === config.channels.length - 1 ? 'disabled style="opacity: 0.5; cursor: not-allowed; background-color: #4b5563;"' : ''}><i class="fa-solid fa-arrow-down"></i></button>
+                    <a href="/preview/${c.id}" class="action-button" title="Preview Stream" style="background-color: #8b5cf6; text-decoration: none; padding: 6px 10px; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-play"></i></a>
+                    <button class="action-button edit" onclick="openChannelModal(${i})">Edit</button>
+                    <button class="action-button delete" onclick="deleteItem('channels',${i})">X</button>
+                </div>
+            </td>
+        </tr>`).join('');
+}
 
         function openTunerModal(idx = null) {
             document.getElementById('tuner-index').value = idx !== null ? idx : "";
@@ -205,6 +216,53 @@
         }
 
         function deleteItem(key, idx) { if(confirm("Are you sure?")) { config[key].splice(idx, 1); render(); } }
+		
+		// === Channel Sorting Logic ===
+
+// Function for Up/Down Arrows
+function moveChannel(idx, direction) {
+    // Check if the move is out of bounds
+    if (idx + direction < 0 || idx + direction >= config.channels.length) return;
+    
+    // Swap the elements in the array
+    const temp = config.channels[idx];
+    config.channels[idx] = config.channels[idx + direction];
+    config.channels[idx + direction] = temp;
+    
+    render(); // Update the UI
+}
+
+// Variables & Functions for Drag-and-Drop
+let draggedIdx = null;
+
+function dragStart(e, idx) {
+    draggedIdx = idx;
+    e.dataTransfer.effectAllowed = 'move';
+    // Make the dragged row slightly transparent
+    setTimeout(() => e.target.style.opacity = '0.4', 0);
+}
+
+function dragOver(e) {
+    e.preventDefault(); // Necessary to allow dropping
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function drop(e, targetIdx) {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === targetIdx) return;
+    
+    // Remove the item from its original position and insert at the new position
+    const movedItem = config.channels.splice(draggedIdx, 1)[0];
+    config.channels.splice(targetIdx, 0, movedItem);
+    
+    render(); // Update the UI
+}
+
+function dragEnd(e) {
+    e.target.style.opacity = '1';
+    draggedIdx = null;
+}
+		
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         window.onload = loadConfig;
 		

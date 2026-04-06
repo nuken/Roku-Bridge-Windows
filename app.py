@@ -39,7 +39,7 @@ CONFIG_FILE = os.path.join(app_data_dir, 'roku_channels.json')
 TUNERS = []
 CHANNELS = []
 APP_PORT = 5006
-APP_VERSION = "5.0.5-LEAN-WIN"
+APP_VERSION = "5.0.6-LEAN-WIN"
 ACTIVE_STREAMS = {}
 stream_lock = threading.Lock()
 

@@ -1,1 +1,1 @@
-5.0.5-LEAN-WIN
+5.0.6-LEAN-WIN
