@@ -5,6 +5,8 @@
 
 # Roku Bridge (Windows Edition)
 
+# There is a bug/issue with YouTube TV Build 237 that is not allowing Deeplinks tuning. I am working on a fix
+
 A lightweight, native Windows background service that acts as a proxy bridge between raw LinkPi Transport Streams and Channels DVR. It dynamically assigns local network ports and issues Roku External Control Protocol (ECP) commands to automate live TV tuning for HDMI encoders.
 
 This version has been completely rewritten to run natively on Windows without requiring Docker or Linux environments. 
